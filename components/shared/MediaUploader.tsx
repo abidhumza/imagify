@@ -25,12 +25,15 @@ const MediaUploader = ({
   const { toast } = useToast();
 
   const onUploadSuccessHandler = (result: any) => {
+
+    console.log("Cloudinary upload result:", result);
+
     setImage((prevState: any) => ({
       ...prevState,
       publicId: result?.info?.public_id,
       width: result?.info?.width,
       height: result?.info?.height,
-      secureURL: result?.info?.secureURL
+      secureURL: result?.info?.secure_url
     }));
 
     onValueChange(result?.info?.public_id);
