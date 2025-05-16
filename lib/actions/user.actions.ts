@@ -4,7 +4,30 @@ import { revalidatePath } from "next/cache";
 
 import User from "../database/models/user.model";
 import { connectToDatabase } from "../database/mongoose";
+import { clerkClient } from "@clerk/nextjs/server";
 import { handleError } from "../utils";
+
+// UPDATED CREATE
+export async function getOrCreateUser(clerkId: string) {
+  await connectToDatabase();
+
+  let user = await User.findOne({ clerkId });
+
+  if (!user) {
+    const clerkUser = await clerkClient.users.getUser(clerkId);
+
+    user = await User.create({
+      clerkId,
+      name: `${clerkUser.firstName} ${clerkUser.lastName}`.trim(),
+      username: clerkUser.username || clerkUser.emailAddresses[0].emailAddress.split("@")[0], // Fallback
+      email: clerkUser.emailAddresses[0].emailAddress,
+      photo: clerkUser.imageUrl,
+      creditBalance: 10, // Or your default value
+    });
+  }
+
+  return JSON.parse(JSON.stringify(user));
+}
 
 // CREATE
 export async function createUser(user: CreateUserParams) {
